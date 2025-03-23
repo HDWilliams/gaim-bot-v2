@@ -99,8 +99,8 @@ class ChatInterface:
 
                 # Temp variable
                 chat_interface: LambdaChatInterface = st.session_state['chat_interface']
-                stream = chat_interface.get_gpt_chat_response(st.session_state['messages'])
-                content = st.write_stream(stream)
+                content = chat_interface.get_gpt_chat_response(st.session_state['messages'])
+
                 self.add_message_to_state('assistant', content)
-                #st.chat_message("assistant").write(content)
+                st.chat_message("assistant").write(content)
             self.enable_chat()
