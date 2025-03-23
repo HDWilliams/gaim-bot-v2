@@ -32,7 +32,7 @@ class LambdaChatInterface:
 
 
         # Exclude the intro message to the user
-        messages_with_instructions = st.session_state['instructions'] + messages[1:]
+        messages_with_instructions = [st.session_state['instructions']] + messages[1:]
 
         body = {
             "model": self.model,

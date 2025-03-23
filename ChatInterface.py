@@ -35,7 +35,9 @@ class ChatInterface:
     def add_message_to_state(self, role: str | Literal['assistant', 'user'], content:str) -> None:
         message = {'role': role, 'content': content}
         if 'messages' not in st.session_state:
-            st.session_state['messages'] = [{'role':'assistant', 'content': st.secrets['Initial_MESSAGE']}, message]
+            st.session_state['messages'] = [message]
+        else:
+            st.session_state['messages'].append(message)
     
     def add_state_messages_to_chat(self) -> None:
         """Write messages saved in state to the chat object to display to user
@@ -46,7 +48,7 @@ class ChatInterface:
         """
 
         # Do not include the initial system message, only to send to backend
-        for message in st.session_state['messages'][1:]:
+        for message in st.session_state['messages']:
             st.chat_message(message['role']).write(message['content'])
     
     def update_chat_messages(self, role:str | Literal['assistant', 'user'], content:str) -> None:
