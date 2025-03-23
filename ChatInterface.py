@@ -1,6 +1,9 @@
+"""
+Class for creating the chat interface, setting session variables and calling aws lambda backend
+"""
+
 import streamlit as st
 from typing import Literal
-import requests
 from AWSLambdaInterface import LambdaChatInterface
 
 class ChatInterface:
@@ -17,7 +20,6 @@ class ChatInterface:
 
     """
     def __init__(self, starter_message:str ) -> None:
-        self.enable_chat()
         if 'messages' not in st.session_state:
             self.add_message_to_state('assistant', starter_message)
         if 'instructions' not in st.session_state:
@@ -31,6 +33,15 @@ class ChatInterface:
 
         """
         st.session_state['disabled_chat'] = False
+    
+    def disable_chat(self) -> None:
+        """Helper function for setting variable to True, disallow user to interact with chat while waiting for response
+
+        Args: None
+        Returns: None
+
+        """
+        st.session_state['disabled_chat'] = True
     
     def add_message_to_state(self, role: str | Literal['assistant', 'user'], content:str) -> None:
         message = {'role': role, 'content': content}
@@ -88,21 +99,24 @@ class ChatInterface:
         self._create_lambda_interface(st.secrets['LAMBDA_API_KEY'], st.secrets['LAMBDA_GPT_URL'])
        
         self.add_state_messages_to_chat()
+        self.enable_chat()
 
         if query := st.chat_input(max_chars=250, disabled=st.session_state["disabled_chat"]):
-            #DISABLE USER INPUT WHILE WAITING FOR MESSAGE
+            # Accept input from user
             if not st.session_state["disabled_chat"]:
 
 
-                #ADD USER MESSAGE TO MESSAGE LIST
+                # Add the user message to the chat log and message history
+                self.disable_chat()
                 self.add_message_to_state('user', query)
                 st.chat_message("user").write(query)
 
 
-                # Temp variable
+                # Get chat completion from lambda function. TODO implement response streaming
                 chat_interface: LambdaChatInterface = st.session_state['chat_interface']
                 content = chat_interface.get_gpt_chat_response(st.session_state['messages'])
 
                 self.add_message_to_state('assistant', content)
                 st.chat_message("assistant").write(content)
+
             self.enable_chat()
