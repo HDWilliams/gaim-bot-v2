@@ -30,9 +30,14 @@ class LambdaChatInterface:
     )
     def get_gpt_chat_response(self, messages:List[dict], timeout=30) -> str:
 
+
+        # Exclude the intro message to the user
+        messages_with_instructions = st.session_state['instructions'] + messages[1:]
+
         body = {
-            'model': self.model,
-            'messages': messages[1:]
+            "model": self.model,
+            "messages": messages_with_instructions,
+            "index_name": st.secrets['INDEX_NAME']
         }
 
         try:
@@ -44,6 +49,7 @@ class LambdaChatInterface:
                 # Need to catch json decode error
                 response_json = response.json()
 
-                return response_json
+                return response_json['data']
         except tenacity.RetryError as e:
             print(f'Retry Error {e}.')
+            return 'Sorry I seem to have experienced an error'
