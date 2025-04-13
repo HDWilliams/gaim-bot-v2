@@ -2,8 +2,9 @@
 Class containing functions for interacting with AWS lambda retrieval + chat completion function
 
 """
+import json
 import streamlit as st
-import requests
+import requests, asyncio
 from typing import List
 import tenacity
 import ratelimit
@@ -74,6 +75,44 @@ class LambdaChatInterface:
                 response_json = response.json()
 
                 return response_json['data']
+        except tenacity.RetryError as e:
+            print(f'Retry Error {e}.')
+            return 'Sorry I seem to have experienced an error'
+        
+    def stream_gpt_chat_response(self, messages:List[dict], timeout=30) -> str:
+        """Query backend lambda function for API response. Returns ai generated response as a string
+
+        Args: 
+            messages: List[{'role': Literal['assistant', 'user', 'developer'], 'content': str}]
+            timeout: int, time for request to timeout
+
+        Returns: str
+        """
+
+        # Exclude the intro message to the user
+        messages_with_instructions = [st.session_state['instructions']] + messages[1:]
+
+        body = {
+            "model": self.model,
+            "messages": messages_with_instructions,
+            "index_name": st.secrets['INDEX_NAME']
+        }
+
+        try:
+            with st.spinner("I'm thinking...", show_time=False):
+                response = requests.post(self.url, headers=self.headers, json=body, timeout=timeout)
+                response.raise_for_status()
+
+
+                # Need to catch json decode error
+                for line in response.iter_lines(decode_unicode=True):
+                    if line:
+                        print(line)
+                        chunk = json.loads(line)
+                        if isinstance(chunk, dict):
+                            yield chunk['error']
+                            return
+                        yield chunk
         except tenacity.RetryError as e:
             print(f'Retry Error {e}.')
             return 'Sorry I seem to have experienced an error'

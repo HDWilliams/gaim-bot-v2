@@ -113,8 +113,8 @@ class ChatInterface:
 
 
                 # Get chat completion from lambda function. TODO implement response streaming
-                chat_interface: LambdaChatInterface = st.session_state['chat_interface']
-                content = chat_interface.get_gpt_chat_response(st.session_state['messages'])
+                lambda_chat_interface: LambdaChatInterface = st.session_state['chat_interface']
+                content = lambda_chat_interface.get_gpt_chat_response(st.session_state['messages'])
 
                 self.add_message_to_state('assistant', content)
                 st.chat_message("assistant").write(content)
