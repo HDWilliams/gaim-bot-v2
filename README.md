@@ -1,5 +1,5 @@
 # gaim-bot-v2
-## https://gaimbotv2.streamlit.app/
+## http://ec2-3-87-212-100.compute-1.amazonaws.com/ or https://gaimbotv2.streamlit.app/
 This project serves as the front end repository of the Gaim-bot chatbot.
 This frontend is a streamlit project that creates a chat interface for querying an AWS Lambda RAG microservice. 
 The front end allows users to ask natural languge queries about the videogame Eldin Ring for hints, explanations and more. The chat also provides images of relevant game locations, weapons, armor etc.
